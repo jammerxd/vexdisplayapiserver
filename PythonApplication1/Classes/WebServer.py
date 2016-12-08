@@ -39,6 +39,7 @@ class WebServer(object):
         handlers.append([r"/eventName",EventNameHandler,{}])
         handlers.append([r"/eventName/",EventNameHandler,{}])
         handlers.append([r"/test",TestHandler,{}])
+        handlers.append([r"/(favicon\.ico)",tornado.web.StaticFileHandler,{'path': os.path.join(os.getcwd(),"favicon.ico")}])
         for i in range(12):
             x = i+1
             handlers.append([r"/division"+str(x) + "/",DivisionHandler,{'division':x}])
@@ -52,6 +53,7 @@ class WebServer(object):
 
             handlers.append([r"/division"+str(x)+"/matches",MatchHandler,{'division':x}])
             handlers.append([r"/division"+str(x)+"/matches/",MatchHandler,{'division':x}])
+
     
         self.app = None
         self.app = WebServerApp(handlers,self.settings)
