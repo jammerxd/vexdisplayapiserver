@@ -10,13 +10,14 @@ class CheckInHandler(tornado.web.RequestHandler):
 
     @asynchronous
     def get(self,**params):
+        self.set_header("Content-Type", 'application/json; charset="utf-8"')
         self.application.getCheckIns()
-        output = "{ \"count\" : " + str(len(EVENT_DATA.checkIns)) + ", \"checkins\" : ["
+        output = "{ "
         for team in EVENT_DATA.checkIns:
-            output += "{ \"" + team + "\" : "
+            output += "\"" + team + "\" : "
             output += "true" if EVENT_DATA.checkIns[team] == True else "false"
-            output += " },"
+            output += " ,"
         if(output.endswith(",")):
             output = output[:len(output)-1]
-        output += "]}"
+        output += "}"
         self.finish(output)

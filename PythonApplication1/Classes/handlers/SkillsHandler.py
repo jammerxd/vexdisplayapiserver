@@ -10,6 +10,7 @@ class SkillsHandler(tornado.web.RequestHandler):
 
     @asynchronous
     def get(self,**params):
+        self.set_header("Content-Type", 'application/json; charset="utf-8"')
         self.application.getSkills()
         output = "{ \"count\" : " + str(len(EVENT_DATA.skillsRanks)) + ", \"skills\" : ["
         for team in EVENT_DATA.skillsRanks:

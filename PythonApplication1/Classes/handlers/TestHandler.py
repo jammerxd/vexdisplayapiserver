@@ -9,6 +9,7 @@ class TestHandler(tornado.web.RequestHandler):
     
     @asynchronous
     def get(self,**params):
+        #self.set_header("Content-Type", 'application/json; charset="utf-8"')
         #for i in range(12):
         #    self.application.updateData(i+1)
         #for t in EVENT_DATA.teams:

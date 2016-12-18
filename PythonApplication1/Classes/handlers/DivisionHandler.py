@@ -18,7 +18,7 @@ class DivisionHandler(tornado.web.RequestHandler):
         #if(output.endswith(",")):
         #    output = output[:len(output)-1]
         #output += "]}"
-        
+        self.set_header("Content-Type", 'application/json; charset="utf-8"')
         output = "{ \"name\" : \"" + EVENT_DATA.divisions[self.divisionStr]["name"] + "\"}"
         self.finish(output)
         

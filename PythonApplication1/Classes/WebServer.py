@@ -57,19 +57,24 @@ class WebServer(object):
     
         self.app = None
         self.app = WebServerApp(handlers,self.settings)
-        self.app.getEventName()
-        for i in range(12):
-            self.app.updateData(i+1)
-        EVENT_DATA.doLogin(self.app.config)
-        self.app.getInspections()
-        self.app.getCheckIns()
-        self.app.getSkills()
-        self.server = None
-        self.server = tornado.httpserver.HTTPServer(self.app)
-        self.server.listen(int(self.settings.getPort()))      
-        tornado.ioloop.IOLoop.instance().start()
+        try:
+        
+            self.app.getEventName()
+            for i in range(12):
+                self.app.updateData(i+1)
+            EVENT_DATA.doLogin(self.app.config)
+            self.app.getInspections()
+            self.app.getCheckIns()
+            self.app.getSkills()
+            self.server = None
+            self.server = tornado.httpserver.HTTPServer(self.app)
+            self.server.listen(int(self.settings.getPort()))      
+            tornado.ioloop.IOLoop.instance().start()
+        except Exception, ex:
+            doNothing = True
 
     def stop(self):
         ioloop = tornado.ioloop.IOLoop.instance()
         ioloop.add_callback(ioloop.stop) 
-        self.server.stop()
+        if self.server != None:
+            self.server.stop()

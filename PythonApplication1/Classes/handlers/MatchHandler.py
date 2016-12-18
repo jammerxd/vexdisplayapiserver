@@ -11,6 +11,7 @@ class MatchHandler(tornado.web.RequestHandler):
         
     @asynchronous
     def get(self,**params):
+        self.set_header("Content-Type", 'application/json; charset="utf-8"')
         self.application.getTeams(self.division)
         self.application.getMatches(self.division)
         output = "{ \"count\" : " + str(len(EVENT_DATA.divisions[self.divisionStr]["matches"])) + ", \"matches\" : ["

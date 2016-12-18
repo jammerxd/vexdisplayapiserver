@@ -10,12 +10,12 @@ class InspectionHandler(tornado.web.RequestHandler):
 
     @asynchronous
     def get(self,**params):
-        
+        self.set_header("Content-Type", 'application/json; charset="utf-8"')
         self.application.getInspections()
-        output = "{ \"count\" : " + str(len(EVENT_DATA.inspections)) + ", \"Inspections\" : ["
+        output = "{ "
         for team in EVENT_DATA.inspections:
-            output += "{ \"" + team + "\" : \"" + EVENT_DATA.inspections[team] + "\"},"
+            output += " \"" + team + "\" : \"" + EVENT_DATA.inspections[team] + "\","
         if(output.endswith(",")):
             output = output[:len(output)-1]
-        output += "]}"
+        output += "}"
         self.finish(output)

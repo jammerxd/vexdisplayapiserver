@@ -84,7 +84,13 @@ class ConfigureServer(wx.Frame):
           
         self.BtnRefetch.Bind(wx.EVT_BUTTON,self.on_refetch_data)
         #self.Refresh()
-        
+        self.settings_lbl_Status = wx.StaticText(self,-1)
+        self.settings_lbl_Status.SetFont(self.segoeUIRegular)
+        self.settings_lbl_Status.SetLabel("Waiting for Start")
+        self.settings_lbl_Status.SetPosition(((self.GetSize()[0]-self.settings_lbl_Status.GetSize()[0])/2,340)) 
+    def changeStatus(self,newStatus):
+        self.settings_lbl_Status.SetLabel(str(newStatus))
+        self.settings_lbl_Status.SetPosition(((self.GetSize()[0]-self.settings_lbl_Status.GetSize()[0])/2,340)) 
     def refectchComplete(self):
         self.BtnRefetch.Enable()
         self.BtnApply.Enable()
@@ -147,8 +153,14 @@ class ConfigureServer(wx.Frame):
                 self.BtnRefetch.Disable()
                 self.wsRunning = False
             except:
-                self.wsRunning = True
-                self.BtnApply.SetLabel("Stop")
+                self.wsRunning = True if self.ws != None else False
+                if self.wsRunning:
+                    try:
+                        self.ws.stop()
+                    except Exception, ex:
+                        doNothing = True
+                    self.wsRunning = False
+                self.BtnApply.SetLabel("Start")
                 self.TxtbxTMWebServer.Enable()
                 self.TxtbxPort.Enable()
                 self.TxtbxUploadDir.Enable()

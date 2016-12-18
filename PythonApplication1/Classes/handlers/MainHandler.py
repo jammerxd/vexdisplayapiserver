@@ -10,6 +10,7 @@ class MainHandler(tornado.web.RequestHandler):
     global EVENT_DATA 
     @asynchronous
     def post(self,**params):
+        
         division = int(self.get_argument('div', True))
         updateType = self.get_argument('type',True)
         actual_file = None
@@ -38,6 +39,7 @@ class MainHandler(tornado.web.RequestHandler):
 
     @asynchronous
     def get(self,**params):
+        self.set_header("Content-Type", 'application/json; charset="utf-8"')
         self.application.getEventName()
         for i in range(12):
             self.application.updateData(i+1)

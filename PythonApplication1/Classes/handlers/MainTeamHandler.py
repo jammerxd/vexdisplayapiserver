@@ -10,7 +10,7 @@ class MainTeamHandler(tornado.web.RequestHandler):
 
     @asynchronous
     def get(self,**params):
-        
+        self.set_header("Content-Type", 'application/json; charset="utf-8"')
         for i in range(12): 
             self.application.getName(i+1)
             self.application.getTeams(i+1)
