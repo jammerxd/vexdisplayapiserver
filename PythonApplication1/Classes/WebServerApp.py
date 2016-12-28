@@ -6,8 +6,9 @@ class WebServerApp(tornado.web.Application):
     global EVENT_DATA
     def __init__(self,handlers,config):
         handlers = handlers
-        settings = dict(debug=True)
+        settings = dict(debug=True,static_path=os.path.join(os.getcwd()))
         self.config = config
+        
         tornado.web.Application.__init__(self, handlers, **settings)
     
     def updateData(self,division):
@@ -54,9 +55,10 @@ class WebServerApp(tornado.web.Application):
                     tempTeam.setNumber(str(raw_data[1]))
                     tempTeam.setName(raw_data[2])
                     tempTeam.setLocation(raw_data[3])
-                    tempTeam.setTown(raw_data[3].split(",")[0])
-                    tempTeam.setState(raw_data[3].split(",")[1])
-                    tempTeam.setCountry(raw_data[3].split(",")[2])
+                    if tempTeam.getLocation() != "":
+                        tempTeam.setTown(raw_data[3].split(",")[0])
+                        tempTeam.setState(raw_data[3].split(",")[1])
+                        tempTeam.setCountry(raw_data[3].split(",")[2])
                     tempTeam.setSchool(raw_data[4])
                     tempTeam.setDivision(str(division))
                     tempTeam.setDivisionName(EVENT_DATA.divisions["division"+str(division)]["name"])
@@ -105,6 +107,7 @@ class WebServerApp(tornado.web.Application):
 
                     EVENT_DATA.divisions["division"+str(division)]["ranks"][str(tI+1)] = teamNumber
                     tI+=1
+            
             if len(EVENT_DATA.divisions["division"+str(division)]["ranks"]) == 0:
                 i = 0
                 for team in EVENT_DATA.divisions["division"+str(division)]["teams"]:
@@ -112,11 +115,17 @@ class WebServerApp(tornado.web.Application):
                     EVENT_DATA.teams[team].setRank(str(i+1))            
                     EVENT_DATA.divisions["division"+str(division)]["ranks"][str(i+1)] = EVENT_DATA.divisions["division"+str(division)]["teams"][team].getNumber()
                     i += 1
+            #elif len(EVENT_DATA.divisions["division"+str(division)]["ranks"]) != (tI-1):
+            #    EVENT_DATA.divisions["division"+str(division)]["ranks"] = OrderedDict()
+            #    self.getRanks(division)
             else:
                 for rank in EVENT_DATA.divisions["division"+str(division)]["ranks"]:
                     team = EVENT_DATA.divisions["division"+str(division)]["ranks"][rank]
                     EVENT_DATA.divisions["division"+str(division)]["teams"][team].setRank(rank)
-                    EVENT_DATA.teams[team].setRank(rank)                    
+                    EVENT_DATA.teams[team].setRank(rank)
+        if len(EVENT_DATA.divisions["division"+str(division)]["ranks"]) != tI and len(EVENT_DATA.divisions["division"+str(division)]["ranks"]) > 0 and tI > 0:
+            EVENT_DATA.divisions["division"+str(division)]["ranks"] = OrderedDict()
+            self.getRanks(division)           
     def getMatches(self,division):
         matchData = {}
         matchDataFileStr = None
@@ -166,8 +175,10 @@ class WebServerApp(tornado.web.Application):
                     instance = splitData[2]
                     matchNum = splitData[3]
                     if str(division) == str(division) and (str(round) == "2" and str(instance) == "1") or (str(round) == "1" and str(instance) == "1"):
+                    #if str(division) == str(division) and (str(round) == "2" and str(instance) == "1"):
                         tempMatch = Match()
                         matchPrefix = "Q" if str(round) == "2" and str(instance) == "1" else "P"
+                        #matchPrefix = "Q"
                         tempMatch.setDivision(str(division))
                         tempMatch.setRound(str(round))
                         tempMatch.setInstance(str(instance))
@@ -247,6 +258,12 @@ class WebServerApp(tornado.web.Application):
                 table = tableLst[1].split("</tbody>")[0]
                 table = table[table.find("<tr>"):]
                 rowList = table.split("<tr>")
+                
+                EVENT_DATA.inspections_c = 0
+                EVENT_DATA.inspections_ns = 0
+                EVENT_DATA.inspections_p = 0
+                EVENT_DATA.inspections_t = 0
+
                 for row in rowList:
                     row = row.strip().replace("</td>","").replace("\n","").replace("\r","").replace("</tr>","")
                     if row != "" and row.replace("\"","") != "":
@@ -258,6 +275,13 @@ class WebServerApp(tornado.web.Application):
                                 
                             
                         EVENT_DATA.inspections[raw_data[0]] = raw_data[1]
+                        EVENT_DATA.inspections_t += 1
+                        if raw_data[1] == "Not Started":
+                            EVENT_DATA.inspections_ns += 1
+                        elif raw_data[1] == "Partial":
+                            EVENT_DATA.inspections_p  += 1
+                        elif raw_data[1] == "Completed":
+                            EVENT_DATA.inspections_c += 1
     def getCheckIns(self):
         raw_html = EVENT_DATA.getRequest(self.config.getWebServer() + "/admin/checkin/summary")
         if raw_html != None and raw_html != "" and raw_html.find("<html><title>500: Internal Server Error</title><body>500: Internal Server Error</body></html>") < 0:

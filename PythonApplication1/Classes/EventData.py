@@ -8,7 +8,15 @@ class EventData(object):
         self.checkIns = {}
         self.skillsRanks = OrderedDict()
         self.divisions = {}
+        
+        self.inspections_t = 0
+        self.inspections_ns = 0
+        self.inspections_p = 0
+        self.inspections_c = 0
+
         self.RequestSession = requests.Session()
+
+        
         for i in range(12):
             self.divisions["division"+str(i+1)] = {}
             self.divisions["division"+str(i+1)]["teams"] = {}

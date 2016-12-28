@@ -45,4 +45,4 @@ class TaskBarIcon(wx.TaskBarIcon):
         self.frame.Hide()
         self.frame.Destroy()
         wx.CallAfter(self.Destroy)
-        sys.exit(0)
+        os._exit(0)

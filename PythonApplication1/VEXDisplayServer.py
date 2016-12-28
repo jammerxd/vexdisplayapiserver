@@ -3,11 +3,14 @@ import socket
 import threading
 import os
 from Classes import *
-
-
-app = wx.App(False)
+class VEXServer(wx.App):
+    def OnInit(self):
+        self.locale = wx.Locale(wx.LANGUAGE_ENGLISH)
+        return True
+     
+app = VEXServer(False)
 mainFrame = ConfigureServer()
-app.SetTopWindow(mainFrame)
+#app.SetTopWindow(mainFrame)
 mainFrame.Show()
 TaskBarIcon(mainFrame)
 app.MainLoop()
