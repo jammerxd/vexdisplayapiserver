@@ -14,3 +14,4 @@ mainFrame = ConfigureServer()
 mainFrame.Show()
 TaskBarIcon(mainFrame)
 app.MainLoop()
+#command to run C:\Python27\python setup.py py2exe

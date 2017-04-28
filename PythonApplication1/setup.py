@@ -60,7 +60,7 @@ changelog and logo are included in dist
 setup(
     windows = [
         {
-            "script": "C:\Users\jammerxd\Documents\Visual Studio 2015\Projects\PythonApplication1\PythonApplication1\VEXDisplayServer.py",
+            "script": ".\VEXDisplayServer.py",
             "icon_resources": [(1, "favicon.ico")],
             "other_resources": [(24,1,manifest)],
             "uac_info": "requireAdministrator"
