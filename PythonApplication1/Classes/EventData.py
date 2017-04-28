@@ -28,8 +28,11 @@ class EventData(object):
         data = dict(user='admin', password=config.getTMPassword())
         r = self.RequestSession.post(config.getWebServer()+"/admin/login",data=data,allow_redirects=True)
     def getRequest(self,url):
-        r = self.RequestSession.get(url)
-        return r.content
+        try:
+            r = self.RequestSession.get(url)
+            return r.content
+        except Exception, ex:
+            return ""
 global EVENT_DATA 
 EVENT_DATA = None
 if(EVENT_DATA == None):

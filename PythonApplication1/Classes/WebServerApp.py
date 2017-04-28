@@ -1,7 +1,13 @@
-import tornado, xlrd, csv, os, glob, urllib2
+import tornado, xlrd, csv, os, glob, urllib2, time
+from datetime import datetime
 from collections import OrderedDict
 from EventData import *
 from data import *
+TIME_FORMAT = ""
+if os.name == 'nt':
+    TIME_FORMAT = "%#I:%M %p"
+else:
+    TIME_FORMAT = "%-I:%M %p"
 class WebServerApp(tornado.web.Application):
     global EVENT_DATA
     def __init__(self,handlers,config):
@@ -123,9 +129,12 @@ class WebServerApp(tornado.web.Application):
                     team = EVENT_DATA.divisions["division"+str(division)]["ranks"][rank]
                     EVENT_DATA.divisions["division"+str(division)]["teams"][team].setRank(rank)
                     EVENT_DATA.teams[team].setRank(rank)
-        if len(EVENT_DATA.divisions["division"+str(division)]["ranks"]) != tI and len(EVENT_DATA.divisions["division"+str(division)]["ranks"]) > 0 and tI > 0:
-            EVENT_DATA.divisions["division"+str(division)]["ranks"] = OrderedDict()
-            self.getRanks(division)           
+        try:
+            if len(EVENT_DATA.divisions["division"+str(division)]["ranks"]) != tI and len(EVENT_DATA.divisions["division"+str(division)]["ranks"]) > 0 and tI > 0:
+                EVENT_DATA.divisions["division"+str(division)]["ranks"] = OrderedDict()
+                self.getRanks(division)
+        except Exception, ex:
+            t = false           
     def getMatches(self,division):
         matchData = {}
         matchDataFileStr = None
@@ -140,17 +149,17 @@ class WebServerApp(tornado.web.Application):
             matchTimesFileStr = None
             matchTimes = {}
         
-            for f in glob.glob(os.path.join(self.config.getUploadDir(),"division"+str(division),"*.xlsx")):
-                if f.find("Times") > -1:
-                    matchTimesFileStr = f
-                    break
+            #for f in glob.glob(os.path.join(self.config.getUploadDir(),"division"+str(division),"*.xlsx")):
+            #    if f.find("Times") > -1:
+            #        matchTimesFileStr = f
+            #        break
         
-            if matchTimesFileStr != None:
-                matchTimes = self.getMatchTimesContent(f)
-
-            for matchName in matchTimes:
-                if matchName in matchData.keys():
-                    matchData[matchName].setScheduledTime(matchTimes[matchName].getScheduledTime())
+            #if matchTimesFileStr != None:
+            #    matchTimes = self.getMatchTimesContent(f)
+            #
+            #for matchName in matchTimes:
+            #    if matchName in matchData.keys():
+            #        matchData[matchName].setScheduledTime(matchTimes[matchName].getScheduledTime())
 
 
             EVENT_DATA.divisions["division"+str(division)]["matches"] = matchData
@@ -169,64 +178,79 @@ class WebServerApp(tornado.web.Application):
             line = line.replace("\r","").replace("\n","").replace("\t","").replace("\"","").strip()
             if line != "":
                 splitData = line.split(",")
-                if len(splitData) == 31:
+                if len(splitData) >= 17:#31 - Added Match Times...
                     division = splitData[0]
                     round = splitData[1]
                     instance = splitData[2]
                     matchNum = splitData[3]
-                    if str(division) == str(division) and (str(round) == "2" and str(instance) == "1") or (str(round) == "1" and str(instance) == "1"):
+                    #if str(division) == str(division) and (str(round) == "2" and str(instance) == "1") or (str(round) == "1" and str(instance) == "1"):
                     #if str(division) == str(division) and (str(round) == "2" and str(instance) == "1"):
-                        tempMatch = Match()
-                        matchPrefix = "Q" if str(round) == "2" and str(instance) == "1" else "P"
-                        #matchPrefix = "Q"
-                        tempMatch.setDivision(str(division))
-                        tempMatch.setRound(str(round))
-                        tempMatch.setInstance(str(instance))
-                        tempMatch.setMatchNum(str(matchNum))
-                        tempMatch.setMatch(matchPrefix + str(matchNum))
-                        tempMatch.setField(splitData[4])
-                        tempMatch.setRed1(splitData[5])
-                        tempMatch.setRed2(splitData[6])
-                        tempMatch.setRed3(splitData[7])
-                        tempMatch.setBlue1(splitData[8])
-                        tempMatch.setBlue2(splitData[9])
-                        tempMatch.setBlue3(splitData[10])
-                        tempMatch.setRedScore(splitData[11])
-                        tempMatch.setBlueScore(splitData[12])
-                        tempMatch.setRedSit(splitData[13])
-                        tempMatch.setBlueSit(splitData[14])
-                        tempMatch.setScored(True if splitData[15] == "True" else False)
-                        tempMatch.setWinner(splitData[16])
-                        tempMatch.setRedAuto(True if splitData[17] == "1" else False)
+                    tempMatch = Match()
+                    matchPrefix = "Q" if str(round) == "2" and str(instance) == "1" else "P"
+                    if str(round) == "2" and str(instance) == "1":
+                        matchPrefix = "Q"
+                    elif str(round) == "1" and str(instance) == "1":
+                        matchPrefix = "P"
+                    elif str(round) == "3":
+                        matchPrefix = "QF" + str(instance) + "-"
+                    elif str(round) == "4":
+                        matchPrefix = "SF" + str(instance) + "-"
+                    elif str(round) == "5":
+                        matchPrefix = "F"  
+                    #matchPrefix = "Q"
+                    tempMatch.setDivision(str(division))
+                    tempMatch.setRound(str(round))
+                    tempMatch.setInstance(str(instance))
+                    tempMatch.setMatchNum(str(matchNum))
+                    tempMatch.setMatch(matchPrefix + str(matchNum))
+                    tempMatch.setField(splitData[4])
+                    tempMatch.setRed1(splitData[5])
+                    tempMatch.setRed2(splitData[6])
+                    tempMatch.setRed3(splitData[7])
+                    tempMatch.setBlue1(splitData[8])
+                    tempMatch.setBlue2(splitData[9])
+                    tempMatch.setBlue3(splitData[10])
+                    tempMatch.setRedScore(splitData[11])
+                    tempMatch.setBlueScore(splitData[12])
+                    tempMatch.setRedSit(splitData[13])
+                    tempMatch.setBlueSit(splitData[14])
+                    tempMatch.setScored(True if splitData[15] == "True" else False)
+                    tempMatch.setWinner(splitData[16])
+                    #d = datetime.strptime(splitData[17],'%Y-%m-%d %H-%M-%S')
+                    if(tempMatch.getRound() == "1" or tempMatch.getRound() == "2"):
+                        tempMatch.setScheduledTime(datetime.strptime(splitData[17],'%Y-%m-%d %H:%M:%S').strftime(TIME_FORMAT))
+                    if len(splitData) == 32:
                         tempMatch.setRedFarCubes(splitData[18])
-                        tempMatch.setRedFarStars(splitData[19])
-                        tempMatch.setRedHighRobots(splitData[20])
-                        tempMatch.setRedLowRobots(splitData[21])
+                        tempMatch.setRedAuto(True if splitData[19] == "1" else False)
+                        
+                        tempMatch.setRedFarStars(splitData[20])
+                        tempMatch.setRedHighRobots(splitData[24])
+                        tempMatch.setRedLowRobots(splitData[23])
                         tempMatch.setRedNearCubes(splitData[22])
-                        tempMatch.setRedNearStars(splitData[23])
-                        tempMatch.setBlueAuto(True if splitData[24] == "1" else False)
+                        tempMatch.setRedNearStars(splitData[21])
+                        tempMatch.setBlueAuto(True if splitData[26] == "1" else False)
                         tempMatch.setBlueFarCubes(splitData[25])
-                        tempMatch.setBlueFarStars(splitData[26])
-                        tempMatch.setBlueHighRobots(splitData[27])
-                        tempMatch.setBlueLowRobots(splitData[28])
+                        tempMatch.setBlueFarStars(splitData[27])
+                        tempMatch.setBlueHighRobots(splitData[31])
+                        tempMatch.setBlueLowRobots(splitData[30])
                         tempMatch.setBlueNearCubes(splitData[29])
-                        tempMatch.setBlueNearStars(splitData[30])
-                        matches[tempMatch.getMatch()] = tempMatch
-                        currentMatchIndex+=1
+                        tempMatch.setBlueNearStars(splitData[28])
+                    matches[tempMatch.getMatch()] = tempMatch
+                    currentMatchIndex+=1
         return matches
-    def getMatchTimesContent(self,fileName):
-        matchTimes = {}
-        wb = xlrd.open_workbook(fileName)
-        sh = wb.sheet_by_index(0)
+    #def getMatchTimesContent(self,fileName):
+    #    matchTimes = {}
+    #    wb = xlrd.open_workbook(fileName)
+    #    sh = wb.sheet_by_index(0)
     
-        for rownum in range(1,sh.nrows):
-            tempMatch = Match()
-            tempMatch.setMatch(sh.cell_value(rownum,0))
-            if ((tempMatch.getMatch().startswith("Q") or tempMatch.getMatch().startswith("P")) and tempMatch.getMatch().find("-") < 0):
-                tempMatch.setScheduledTime(str(sh.cell_value(rownum,1)))
-                matchTimes[tempMatch.getMatch()] = tempMatch
-        os.remove(fileName)
-        return matchTimes
+    #    for rownum in range(1,sh.nrows):
+    #        tempMatch = Match()
+    #        tempMatch.setMatch(sh.cell_value(rownum,0))
+    #        if ((tempMatch.getMatch().startswith("Q") or tempMatch.getMatch().startswith("P")) and tempMatch.getMatch().find("-") < 0):
+    #            tempMatch.setScheduledTime(str(sh.cell_value(rownum,1)))
+    #            matchTimes[tempMatch.getMatch()] = tempMatch
+    #    os.remove(fileName)
+    #    return matchTimes
 
     def getSkills(self):
         raw_html = self.urlRequest(self.config.getWebServer() + "/skills/rankings")

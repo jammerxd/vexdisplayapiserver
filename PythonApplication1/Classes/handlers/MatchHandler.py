@@ -42,8 +42,10 @@ class MatchHandler(tornado.web.RequestHandler):
             for i in range(1,(9-showMatchCount)):#9 is 1 more than 8 for the (for)loop
                 indexChecked = lastMatchScored + i
                 if(indexChecked > -1 and indexChecked < len(EVENT_DATA.divisions["division"+str(self.division)]["matches"])):
-                    output += "\"" + EVENT_DATA.divisions["division"+str(self.division)]["matches"].items()[indexChecked][0] + "\"" + ","
-                    showMatchCount += 1
+                    if( str(EVENT_DATA.divisions["division"+str(self.division)]["matches"].items()[indexChecked][0]).find("-") == -1):
+                        output += "\"" + EVENT_DATA.divisions["division"+str(self.division)]["matches"].items()[indexChecked][0] + "\"" + ","
+                    #showMatchCount += 1
+                    #dw = 1
         #print lastMatchScored
         if(output.endswith(",")):
             output = output[:len(output)-1]

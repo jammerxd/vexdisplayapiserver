@@ -246,3 +246,10 @@ ModelManifest.xml
 /MULTI_DIVISION_VRC_BACKUP_AGAIN.db
 /InspectionData.xlsx
 *.pyc
+/PythonApplication1/Matches.csv
+/PythonApplication1/Matches.xlsx
+/PythonApplication1/blank.db
+/MyTournament_MC_TEST.db
+/MyTournament_NEW YEAr.db
+/MyTournament_new.db
+/TournamentBackup_NEW_YEAR.db
